@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="slithergoh"
+description='''Pokemon radar and configurable ore scanner for Pixelmon 9.4.1 on Minecraft 1.21.1.'''
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="[${neo_version},)"
+ordering="NONE"
+side="CLIENT"
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="CLIENT"
+[[dependencies.${mod_id}]]
+modId="pixelmon"
+type="required"
+versionRange="[9.4.1,9.5.0)"
+ordering="AFTER"
+side="CLIENT"

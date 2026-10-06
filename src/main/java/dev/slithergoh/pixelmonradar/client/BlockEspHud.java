@@ -25,13 +25,13 @@ public final class BlockEspHud {
  private BlockEspHud(){}
  private record Tag(BlockPos pos,float nx,float ny,double distance,ResourceLocation id,ItemStack stack,String name,int count){}
  private static volatile List<Tag> frameTags=List.of();
- private static long lastGoodCaptureNanos=0L;
+
 
  // Capture positions using Minecraft's real world matrices. Nothing is drawn here.
  @SubscribeEvent public static void capture(RenderLevelStageEvent e){
-  if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)return;
+  if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_CUTOUT_MIPPED_BLOCKS_BLOCKS)return;
   Minecraft mc=Minecraft.getInstance();
-  if(!RadarSettings.oreEspEnabled||mc.player==null||mc.level==null||(!RadarSettings.espLabels&&!RadarSettings.espIcons)){frameTags=List.of();lastGoodCaptureNanos=0L;return;}
+  if(!RadarSettings.oreEspEnabled||mc.player==null||mc.level==null||(!RadarSettings.espLabels&&!RadarSettings.espIcons)){frameTags=List.of();return;}
 
   Vec3 cam=mc.gameRenderer.getMainCamera().getPosition();
   Matrix4f world=new Matrix4f(e.getModelViewMatrix()).translate((float)-cam.x,(float)-cam.y,(float)-cam.z);
@@ -57,7 +57,7 @@ public final class BlockEspHud {
    String name=stack.isEmpty()?title(id.getPath()):stack.getHoverName().getString();
    tags.add(new Tag(p,(x+1f)*.5f,(1f-y)*.5f,dist,id,stack,name,clusterCount(mc,p,state.getBlock())));
   }
-  // Some level stages can briefly deliver a pass where every projected point is rejected.\n  // Do not let that one transient pass erase a valid GUI frame; keep it for ~3 frames.\n  long now=System.nanoTime();\n  if(!tags.isEmpty()){frameTags=List.copyOf(tags);lastGoodCaptureNanos=now;}\n  else if(now-lastGoodCaptureNanos>120_000_000L) frameTags=List.of();
+  frameTags=List.copyOf(tags);
  }
 
  // Draw only in the GUI. This cannot mutate world render buffers or world transforms.

@@ -5,6 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import com.pixelmonmod.pixelmon.blocks.tileentity.PokeChestTileEntity;
+import com.pixelmonmod.pixelmon.blocks.tileentity.PokeStopTileEntity;
+import com.pixelmonmod.pixelmon.blocks.tileentity.PokeGiftTileEntity;
 import java.util.*;
 
 public final class OreScanner {
@@ -101,10 +104,12 @@ public final class OreScanner {
         BlockPos.MutableBlockPos p=new BlockPos.MutableBlockPos();
         for(int y=minY;y<=maxY;y++) for(int z=minZ;z<minZ+16;z++) for(int x=minX;x<minX+16;x++){
             p.set(x,y,z);
-            if(selectedBlocks.contains(mc.level.getBlockState(p).getBlock())) matches.add(p.immutable());
+            if(selectedBlocks.contains(mc.level.getBlockState(p).getBlock())&&claimable(mc,p)) matches.add(p.immutable());
         }
         chunkCache.put(key(cx,cz),List.copyOf(matches));
     }
+
+    private static boolean claimable(Minecraft mc,BlockPos p){if(!RadarSettings.hideClaimedLoot)return true;var be=mc.level.getBlockEntity(p);try{if(be instanceof PokeChestTileEntity chest)return chest.canClaim(mc.player.getUUID());if(be instanceof PokeStopTileEntity stop)return stop.canClaim(mc.player);if(be instanceof PokeGiftTileEntity gift)return gift.canClaim(mc.player.getUUID());}catch(Exception ignored){}return true;}
 
     private static void rebuildVisible(BlockPos center,int range){
         double rr=(double)range*range;

@@ -11,7 +11,7 @@ description='''Useful exploration and world interaction utilities.'''
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
-versionRange="[21.1.200,)"
+versionRange="[21.1.248,)"
 ordering="NONE"
 side="CLIENT"
 [[dependencies.${mod_id}]]

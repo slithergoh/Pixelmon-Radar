@@ -35,7 +35,7 @@ public final class BlockEspHud {
   if(!wk.equals(worldKey)){clear();worldKey=wk;}
   generation++;
 
-  List<Vein> veins=buildVeins(mc);
+  List<Vein> veins=new ArrayList<>(buildVeins(mc));
   veins.sort(Comparator.comparingInt(Vein::priority).reversed().thenComparingDouble(Vein::distance));
   Vec3 cam=mc.gameRenderer.getMainCamera().getPosition();
   Matrix4f world=new Matrix4f(e.getModelViewMatrix()).translate((float)-cam.x,(float)-cam.y,(float)-cam.z);

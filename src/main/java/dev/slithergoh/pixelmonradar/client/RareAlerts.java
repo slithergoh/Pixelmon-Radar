@@ -1,10 +1,4 @@
 package dev.slithergoh.pixelmonradar.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import java.util.HashSet;
-import java.util.Set;
-
-public final class RareAlerts {private RareAlerts(){}private static final Set<Integer> seen=new HashSet<>();private static int ticks;public static void tick(){if(!RadarSettings.alertsEnabled||++ticks%20!=0)return;Minecraft mc=Minecraft.getInstance();if(mc.player==null||mc.level==null)return;for(PokemonInfo p:PokemonScanner.scan())if(p.rare()&&seen.add(p.entityId())){mc.player.displayClientMessage(Component.literal("[Radar] "+p.name()+p.badges()+" - "+Math.round(p.distance())+"m"),false);if(RadarSettings.alertSound)mc.level.playLocalSound(mc.player.getX(),mc.player.getY(),mc.player.getZ(),SoundEvents.EXPERIENCE_ORB_PICKUP,SoundSource.MASTER,.7f,1.3f,false);}}}
+import net.minecraft.client.Minecraft;import net.minecraft.network.chat.Component;import net.minecraft.sounds.SoundEvents;import net.minecraft.sounds.SoundSource;import java.util.*;
+public final class RareAlerts{private RareAlerts(){}private static final Set<Integer>seen=new HashSet<>();private static int ticks;public static void tick(){if(!RadarSettings.alertsEnabled||++ticks%20!=0)return;Minecraft mc=Minecraft.getInstance();if(mc.player==null||mc.level==null)return;for(PokemonInfo p:PokemonScanner.scan())if(p.rare()&&seen.add(p.entityId())){String type=p.shiny()?"SHINY ALERT":"RARE ALERT";int color=p.shiny()?0x55FFFF:0xFFD75A;mc.player.displayClientMessage(Component.literal("["+type+"] "+p.name()+p.badges()+" - "+Math.round(p.distance())+"m").withColor(color),false);if(RadarSettings.alertSound){double x=mc.player.getX(),y=mc.player.getY(),z=mc.player.getZ();if(p.shiny()){mc.level.playLocalSound(x,y,z,SoundEvents.PLAYER_LEVELUP,SoundSource.MASTER,1.0f,1.55f,false);mc.level.playLocalSound(x,y,z,SoundEvents.AMETHYST_BLOCK_CHIME,SoundSource.MASTER,.9f,1.8f,false);}else{mc.level.playLocalSound(x,y,z,SoundEvents.NOTE_BLOCK_BELL.value(),SoundSource.MASTER,.9f,.75f,false);mc.level.playLocalSound(x,y,z,SoundEvents.EXPERIENCE_ORB_PICKUP,SoundSource.MASTER,.7f,1.0f,false);}}}}}

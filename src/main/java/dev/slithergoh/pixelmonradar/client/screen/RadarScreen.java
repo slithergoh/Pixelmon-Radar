@@ -1,84 +1,26 @@
 package dev.slithergoh.pixelmonradar.client.screen;
-
-import dev.slithergoh.pixelmonradar.client.*;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import java.util.*;
-
-public final class RadarScreen extends Screen {
- private enum Tab { NEARBY, FILTERS, SETTINGS }
- private EditBox search; private Tab tab=Tab.NEARBY; private List<PokemonInfo> visible=List.of(); private int scroll;
- private int px,py,pw,ph; private long opened=System.currentTimeMillis(),tabChanged=opened; private Tab previousTab=Tab.NEARBY;
+import dev.slithergoh.pixelmonradar.client.*;import net.minecraft.client.gui.GuiGraphics;import net.minecraft.client.gui.components.EditBox;import net.minecraft.client.gui.screens.Screen;import net.minecraft.network.chat.Component;import java.util.*;
+public final class RadarScreen extends Screen{
+ private enum Page{RADAR,FILTERS,SETTINGS}private Page page=Page.RADAR;private EditBox search;private List<PokemonInfo>visible=List.of();private int x,y,w,h,scroll;private long opened,changed;
  public RadarScreen(){super(Component.literal("Atlas"));}
-
- @Override protected void init(){
-  pw=Math.min(430,width-28); ph=Math.min(318,height-28); px=(width-pw)/2; py=(height-ph)/2;
-  search=new EditBox(font,px+16,py+48,pw-32,20,Component.literal("Search Pokemon"));
-  search.setHint(Component.literal("Search nearby Pokemon..."));search.setValue(RadarSettings.search);
-  search.setResponder(v->{RadarSettings.search=v.trim();scroll=0;});addRenderableWidget(search);
- }
- private void refresh(){
-  ArrayList<PokemonInfo> l=new ArrayList<>(PokemonScanner.scan());String q=RadarSettings.search.toLowerCase();
-  if(!q.isBlank())l.removeIf(p->!p.name().toLowerCase().contains(q));
-  Comparator<PokemonInfo> c=switch(RadarSettings.sortMode){case LEVEL->Comparator.comparingInt(PokemonInfo::level).reversed();case NAME->Comparator.comparing(PokemonInfo::name,String.CASE_INSENSITIVE_ORDER);case RARITY->Comparator.comparingInt(this::priority).reversed().thenComparingDouble(PokemonInfo::distance);default->Comparator.comparingDouble(PokemonInfo::distance);};l.sort(c);visible=l;
- }
+ @Override protected void init(){w=Math.min(560,width-24);h=Math.min(350,height-24);x=(width-w)/2;y=(height-h)/2;opened=changed=System.currentTimeMillis();search=new EditBox(font,x+20,y+52,190,20,Component.literal("Search"));search.setBordered(false);search.setHint(Component.literal("Search Pokemon..."));search.setValue(RadarSettings.search);search.setResponder(s->{RadarSettings.search=s.trim();scroll=0;});addRenderableWidget(search);}
+ private void data(){ArrayList<PokemonInfo>a=new ArrayList<>(PokemonScanner.scan());String q=RadarSettings.search.toLowerCase();if(!q.isBlank())a.removeIf(p->!p.name().toLowerCase().contains(q));Comparator<PokemonInfo>c=switch(RadarSettings.sortMode){case LEVEL->Comparator.comparingInt(PokemonInfo::level).reversed();case NAME->Comparator.comparing(PokemonInfo::name,String.CASE_INSENSITIVE_ORDER);case RARITY->Comparator.comparingInt(this::pri).reversed().thenComparingDouble(PokemonInfo::distance);default->Comparator.comparingDouble(PokemonInfo::distance);};a.sort(c);visible=a;}
  @Override public void renderBackground(GuiGraphics g,int mx,int my,float pt){}
- @Override public void render(GuiGraphics g,int mx,int my,float pt){
-  refresh();float anim=Math.min(1f,(System.currentTimeMillis()-opened)/180f);int off=(int)((1-anim)*8);
-  int y0=py+off;rounded(g,px,y0,px+pw,y0+ph,9,0xF20A1118);rounded(g,px+1,y0+1,px+pw-1,y0+33,8,0xFF102A3A);g.fill(px+1,y0+27,px+pw-1,y0+34,0xFF102A3A);
-  int sweep=(int)((System.currentTimeMillis()/18)%(pw+80))-40;g.fill(Math.max(px+8,sweep+px),y0+32,Math.min(px+pw-8,sweep+px+42),y0+33,0x8849C8F2);
-  g.drawString(font,"ATLAS",px+14,y0+10,0xFFFFFF,true);g.drawString(font,"LIVE RADAR",px+53,y0+10,0xFF79CFF1,false);
-  g.drawString(font,visible.size()+" DETECTED",px+pw-75,y0+10,0xFFA8BBC5,false);
-  drawTab(g,px+14,y0+35,78,"NEARBY",tab==Tab.NEARBY);drawTab(g,px+96,y0+35,78,"FILTERS",tab==Tab.FILTERS);drawTab(g,px+178,y0+35,82,"SETTINGS",tab==Tab.SETTINGS);
-  super.render(g,mx,my,pt);
-  float ta=Math.min(1f,(System.currentTimeMillis()-tabChanged)/150f);int slide=(int)((1-ta)*10);g.pose().pushPose();g.pose().translate(slide,0,0);if(tab==Tab.NEARBY)renderNearby(g,y0,mx,my);else if(tab==Tab.FILTERS)renderFilters(g,y0);else renderSettings(g,y0);g.pose().popPose();
-  g.drawString(font,"R close  •  click a Pokemon to track",px+14,y0+ph-14,0xFF718894,false);
- }
- private void renderNearby(GuiGraphics g,int y0,int mx,int my){
-  int top=y0+76,row=42,max=Math.max(1,(ph-105)/row);scroll=Math.min(scroll,Math.max(0,visible.size()-max));
-  if(visible.isEmpty()){g.drawCenteredString(font,"No Pokemon match the current radar filters",px+pw/2,top+55,0xFF8298A4);return;}
-  for(int i=scroll;i<visible.size()&&i<scroll+max;i++){PokemonInfo p=visible.get(i);int y=top+(i-scroll)*row;boolean tr=p.entityId()==RadarSettings.trackedEntityId,hover=mx>=px+12&&mx<=px+pw-12&&my>=y&&my<=y+37;
-   int accent=accent(p);int lift=hover?1:0;rounded(g,px+12,y-lift,px+pw-12,y+37-lift,7,tr?0xE0244C43:hover?0xE01B2B36:0xC9142029);rounded(g,px+12,y+5-lift,px+15,y+32-lift,2,accent);
-   if(p.sprite()!=null)g.blit(p.sprite(),px+20,y+3,0,0,31,31,31,31);
-   String display=p.name();if(font.width(display)>150)display=font.plainSubstrByWidth(display,142)+"…";g.drawString(font,display,px+58,y+5,p.shiny()?0xFF6FFFFF:p.rare()?0xFFFFD76A:0xFFF2F5F7,true);
-   g.drawString(font,"Lv."+p.level()+"  •  "+Math.round(p.distance())+"m  •  "+direction(p),px+58,y+18,0xFFAFC0C8,false);
-   String badge=badge(p);if(!badge.isEmpty()){int bw=font.width(badge)+8;g.fill(px+pw-88,y+5,px+pw-88+bw,y+17,(accent&0x00FFFFFF)|0x55000000);g.drawString(font,badge,px+pw-84,y+7,accent,false);}
-   g.drawString(font,tr?"TRACKING":"›",px+pw-55,y+23,tr?0xFF7CFFBA:0xFF78909C,false);
-  }
- }
- private void renderFilters(GuiGraphics g,int y0){
-  int y=y0+84;g.drawString(font,"QUICK FILTERS",px+18,y,0xFF8CA5B2,false);y+=17;
-  chip(g,px+18,y,110,"SHINY",RadarSettings.shinyOnly,0xFF62FFFF);chip(g,px+134,y,110,"RARE+",RadarSettings.rareOnly,0xFFFFD66B);y+=31;
-  g.drawString(font,"Filters combine intelligently: enabling Shiny + Rare shows either match.",px+18,y,0xFF78909C,false);y+=27;
-  g.drawString(font,"SORT ORDER",px+18,y,0xFF8CA5B2,false);y+=16;
-  RadarSettings.SortMode[] modes=RadarSettings.SortMode.values();int x=px+18;for(RadarSettings.SortMode m:modes){int w=font.width(m.name())+18;chip(g,x,y,w,m.name(),RadarSettings.sortMode==m,0xFF65C8EF);x+=w+6;}
-  y+=35;g.drawString(font,"Radar prioritises rare encounters visually without hiding normal spawns.",px+18,y,0xFF78909C,false);
- }
- private void renderSettings(GuiGraphics g,int y0){
-  int y=y0+82;setting(g,y,"HUD","Compact live nearby panel",RadarSettings.hudEnabled);y+=35;setting(g,y,"ALERTS","Notify when rare Pokemon appear",RadarSettings.alertsEnabled);y+=35;setting(g,y,"SOUND","Rare encounter audio cue",RadarSettings.alertSound);y+=43;
-  g.drawString(font,"SCAN RANGE",px+18,y,0xFF8CA5B2,false);g.drawString(font,RadarSettings.pokemonRange+"m",px+pw-52,y,0xFF8DDBF7,true);y+=15;
-  g.fill(px+18,y,px+pw-18,y+4,0xFF243641);int fill=(int)((pw-36)*Math.min(1,RadarSettings.pokemonRange/256f));g.fill(px+18,y,px+18+fill,y+4,0xFF48BCE8);
-  g.drawString(font,"Click the range bar to change 32–256m",px+18,y+12,0xFF718894,false);
- }
- private void setting(GuiGraphics g,int y,String name,String desc,boolean on){rounded(g,px+14,y-5,px+pw-14,y+27,7,0x9915222B);g.drawString(font,name,px+24,y,on?0xFFF3F7F9:0xFF91A1A9,true);g.drawString(font,desc,px+24,y+12,0xFF718894,false);toggle(g,px+pw-58,y+1,on);}
- private void drawTab(GuiGraphics g,int x,int y,int w,String s,boolean a){rounded(g,x,y,x+w,y+20,6,a?0xFF214B61:0x6617252E);if(a)rounded(g,x+12,y+18,x+w-12,y+20,1,0xFF58C7EF);g.drawCenteredString(font,s,x+w/2,y+6,a?0xFFFFFFFF:0xFF8299A5);}
- private void chip(GuiGraphics g,int x,int y,int w,String s,boolean a,int col){rounded(g,x,y,x+w,y+22,7,a?(col&0x00FFFFFF)|0x66000000:0xFF17252E);g.drawCenteredString(font,s,x+w/2,y+7,a?col:0xFF8BA0AA);}
- private void toggle(GuiGraphics g,int x,int y,boolean on){rounded(g,x,y,x+40,y+17,8,on?0xFF286A58:0xFF293841);int knob=on?x+25:x+3;rounded(g,knob,y+3,knob+11,y+14,6,on?0xFF9CFFD0:0xFF9AABB3);}
- private static void rounded(GuiGraphics g,int l,int t,int r,int b,int rad,int c){if(r<=l||b<=t)return;rad=Math.max(1,Math.min(rad,Math.min((r-l)/2,(b-t)/2)));g.fill(l+rad,t,r-rad,b,c);g.fill(l,t+rad,r,b-rad,c);for(int i=0;i<rad;i++){int inset=(int)Math.ceil(rad-Math.sqrt(Math.max(0,rad*rad-(rad-i)*(rad-i))));g.fill(l+inset,t+i,r-inset,b-i,c);}}
- private int priority(PokemonInfo p){if(p.shiny())return 100;if(p.legendary()||p.mythical())return 90;if(p.ultraBeast()||p.paradox())return 80;if(p.boss())return 70;return 0;}
- private int accent(PokemonInfo p){if(p.shiny())return 0xFF62FFFF;if(p.legendary()||p.mythical())return 0xFFFFB64F;if(p.ultraBeast()||p.paradox())return 0xFFB987FF;if(p.boss())return 0xFFFF6666;return 0xFF4EB7DD;}
- private String badge(PokemonInfo p){if(p.shiny())return "★ SHINY";if(p.legendary())return "◆ LEGEND";if(p.mythical())return "◆ MYTHIC";if(p.ultraBeast())return "UB";if(p.paradox())return "PARADOX";if(p.boss())return "BOSS";return "";}
- private String direction(PokemonInfo p){var mc=minecraft;double dx=p.pos().getX()+.5-mc.player.getX(),dz=p.pos().getZ()+.5-mc.player.getZ();double a=(Math.toDegrees(Math.atan2(-dx,dz))+360)%360;String[]d={"N","NE","E","SE","S","SW","W","NW"};return d[(int)Math.round(a/45)%8];}
- @Override public boolean mouseClicked(double mx,double my,int b){
-  int y0=py;if(my>=y0+35&&my<=y0+55){if(mx>=px+14&&mx<=px+92){switchTab(Tab.NEARBY);return true;}if(mx>=px+96&&mx<=px+174){switchTab(Tab.FILTERS);return true;}if(mx>=px+178&&mx<=px+260){switchTab(Tab.SETTINGS);return true;}}
-  if(tab==Tab.NEARBY){int top=y0+76,row=42,max=Math.max(1,(ph-105)/row);if(mx>=px+12&&mx<=px+pw-12&&my>=top)for(int i=scroll;i<visible.size()&&i<scroll+max;i++){int y=top+(i-scroll)*row;if(my>=y&&my<=y+37){int id=visible.get(i).entityId();RadarSettings.trackedEntityId=RadarSettings.trackedEntityId==id?-1:id;RadarSettings.save();return true;}}}
-  if(tab==Tab.FILTERS){if(my>=y0+101&&my<=y0+123){if(mx>=px+18&&mx<=px+128){RadarSettings.shinyOnly=!RadarSettings.shinyOnly;RadarSettings.save();return true;}if(mx>=px+134&&mx<=px+244){RadarSettings.rareOnly=!RadarSettings.rareOnly;RadarSettings.save();return true;}}int y=y0+159,x=px+18;for(RadarSettings.SortMode m:RadarSettings.SortMode.values()){int w=font.width(m.name())+18;if(my>=y&&my<=y+22&&mx>=x&&mx<=x+w){RadarSettings.sortMode=m;RadarSettings.save();return true;}x+=w+6;}}
-  if(tab==Tab.SETTINGS){if(mx>=px+pw-65&&mx<=px+pw-10){if(my>=y0+80&&my<=y0+105)RadarSettings.hudEnabled=!RadarSettings.hudEnabled;else if(my>=y0+115&&my<=y0+140)RadarSettings.alertsEnabled=!RadarSettings.alertsEnabled;else if(my>=y0+150&&my<=y0+175)RadarSettings.alertSound=!RadarSettings.alertSound;else return rangeClick(mx,my,y0);RadarSettings.save();return true;}return rangeClick(mx,my,y0);}
-  return super.mouseClicked(mx,my,b);
- }
- private boolean rangeClick(double mx,double my,int y0){int y=y0+205;if(my>=y&&my<=y+24&&mx>=px+18&&mx<=px+pw-18){double f=(mx-(px+18))/(pw-36.0);RadarSettings.pokemonRange=32+(int)Math.round(Math.max(0,Math.min(1,f))*7)*32;RadarSettings.save();return true;}return false;}
- private void switchTab(Tab t){if(tab!=t){previousTab=tab;tab=t;tabChanged=System.currentTimeMillis();scroll=0;}} @Override public boolean mouseScrolled(double mx,double my,double sx,double sy){if(tab!=Tab.NEARBY)return super.mouseScrolled(mx,my,sx,sy);int max=Math.max(1,(ph-105)/42);scroll=Math.max(0,Math.min(Math.max(0,visible.size()-max),scroll+(sy<0?1:-1)));return true;}
- @Override public void onClose(){RadarSettings.save();super.onClose();}@Override public boolean isPauseScreen(){return false;}
-}
+ @Override public void render(GuiGraphics g,int mx,int my,float pt){data();float a=ease(Math.min(1f,(System.currentTimeMillis()-opened)/220f));int yy=y+(int)((1-a)*12);g.pose().pushPose();g.pose().translate(0,yy-y,0);round(g,x,yy-(yy-y),x+w,y+h,12,0xF4080E14);round(g,x+1,y+1,x+w-1,y+42,11,0xFF101C25);g.fill(x+1,y+34,x+w-1,y+43,0xFF101C25);g.drawString(font,"ATLAS",x+18,y+16,0xFFF5FAFC,true);g.drawString(font,"POKEMON RADAR",x+60,y+16,0xFF66C9EF,false);nav(g,x+w-232,y+11,68,"RADAR",page==Page.RADAR);nav(g,x+w-160,y+11,68,"FILTER",page==Page.FILTERS);nav(g,x+w-88,y+11,72,"SETTINGS",page==Page.SETTINGS);g.pose().popPose();
+  round(g,x+14,y+48,x+220,y+76,8,0xFF111D25);g.drawString(font,"⌕",x+22,y+58,0xFF6AC9EC,false);search.setX(x+39);search.setY(y+55);search.setWidth(168);super.render(g,mx,my,pt);
+  float t=ease(Math.min(1f,(System.currentTimeMillis()-changed)/160f));g.pose().pushPose();g.pose().translate((1-t)*9,0,0);if(page==Page.RADAR)radar(g,mx,my);else if(page==Page.FILTERS)filters(g);else settings(g);g.pose().popPose();g.drawString(font,visible.size()+" nearby",x+18,y+h-17,0xFF718A96,false);g.drawString(font,"R to close",x+w-62,y+h-17,0xFF718A96,false);}
+ private void radar(GuiGraphics g,int mx,int my){int cx=x+150,cy=y+202,r=104;round(g,cx-r,cy-r,cx+r,cy+r,104,0xFF0D1820);round(g,cx-r+10,cy-r+10,cx+r-10,cy+r-10,94,0xFF101F29);for(int rr:new int[]{31,61,91})ring(g,cx,cy,rr,0xFF294451);g.fill(cx-r+10,cy,cx+r-10,cy+1,0xFF294451);g.fill(cx,cy-r+10,cx+1,cy+r-10,0xFF294451);double spin=(System.currentTimeMillis()%4000)/4000.0*Math.PI*2;for(int i=0;i<72;i++){double ang=spin-i*.012;int len=(int)(86*(1-i/72f));int ex=cx+(int)(Math.cos(ang)*len),ey=cy+(int)(Math.sin(ang)*len);g.fill(ex,ey,ex+2,ey+2,(0x10+(int)(i*1.4))<<24|0x48C6EF);}
+  var mc=minecraft;for(PokemonInfo p:visible){double dx=p.pos().getX()+.5-mc.player.getX(),dz=p.pos().getZ()+.5-mc.player.getZ(),scale=Math.min(1,p.distance()/Math.max(1,RadarSettings.pokemonRange));double ang=Math.atan2(dz,dx)-Math.toRadians(mc.player.getYRot()+90);int px=cx+(int)(Math.cos(ang)*scale*86),py=cy+(int)(Math.sin(ang)*scale*86);int col=accent(p);round(g,px-3,py-3,px+4,py+4,4,col);}
+  int lx=x+278,top=y+88;g.drawString(font,"NEARBY",lx,top-16,0xFF8FA8B4,false);int max=5;for(int i=0;i<Math.min(max,visible.size());i++){PokemonInfo p=visible.get(i);int yy=top+i*45;boolean tr=p.entityId()==RadarSettings.trackedEntityId;round(g,lx,yy,x+w-16,yy+39,8,tr?0xFF21483E:0xFF111D25);if(p.sprite()!=null)g.blit(p.sprite(),lx+7,yy+5,0,0,29,29,29,29);String n=p.name();if(font.width(n)>120)n=font.plainSubstrByWidth(n,112)+"…";g.drawString(font,n,lx+43,yy+7,p.rare()?accent(p):0xFFF1F5F7,true);g.drawString(font,"Lv."+p.level()+"   "+Math.round(p.distance())+"m   "+dir(p),lx+43,yy+21,0xFF91A7B2,false);if(tr)g.drawString(font,"TRACK",x+w-52,yy+14,0xFF7DFFC0,true);}}
+ private void filters(GuiGraphics g){int yy=y+98;title(g,"DISCOVERY FILTERS",yy);yy+=25;cardToggle(g,yy,"Shiny Pokemon","Only highlight shiny encounters",RadarSettings.shinyOnly,0);yy+=48;cardToggle(g,yy,"Rare encounters","Legendary, mythical, UB, paradox and bosses",RadarSettings.rareOnly,1);yy+=60;title(g,"SORT RESULTS",yy);yy+=22;int xx=x+24;for(RadarSettings.SortMode m:RadarSettings.SortMode.values()){int ww=font.width(m.name())+24;pill(g,xx,yy,ww,m.name(),RadarSettings.sortMode==m);xx+=ww+8;}}
+ private void settings(GuiGraphics g){int yy=y+98;title(g,"RADAR EXPERIENCE",yy);yy+=25;setting(g,yy,"Compact HUD","Show Atlas while exploring",RadarSettings.hudEnabled);yy+=47;setting(g,yy,"Rare alerts","Notify you about important spawns",RadarSettings.alertsEnabled);yy+=47;setting(g,yy,"Alert sound","Play an audio cue for rare encounters",RadarSettings.alertSound);yy+=58;title(g,"DETECTION RANGE   "+RadarSettings.pokemonRange+"m",yy);yy+=22;slider(g,x+24,yy,w-48,(RadarSettings.pokemonRange-32)/224f);}
+ private void cardToggle(GuiGraphics g,int yy,String n,String d,boolean on,int k){round(g,x+24,yy,x+w-24,yy+40,9,0xFF111D25);g.drawString(font,n,x+38,yy+9,on?0xFFF4F8FA:0xFFA4B1B7,true);g.drawString(font,d,x+38,yy+22,0xFF718995,false);toggle(g,x+w-76,yy+11,on);}
+ private void setting(GuiGraphics g,int yy,String n,String d,boolean on){cardToggle(g,yy,n,d,on,0);}private void title(GuiGraphics g,String s,int yy){g.drawString(font,s,x+24,yy,0xFF8CA5B1,false);}
+ private void nav(GuiGraphics g,int xx,int yy,int ww,String s,boolean on){round(g,xx,yy,xx+ww,yy+22,7,on?0xFF1D4254:0x00111111);g.drawCenteredString(font,s,xx+ww/2,yy+7,on?0xFFFFFFFF:0xFF78909C);if(on)round(g,xx+18,yy+20,xx+ww-18,yy+22,1,0xFF56C9F2);}
+ private void pill(GuiGraphics g,int xx,int yy,int ww,String s,boolean on){round(g,xx,yy,xx+ww,yy+24,8,on?0xFF214B60:0xFF14232C);g.drawCenteredString(font,s,xx+ww/2,yy+8,on?0xFFFFFFFF:0xFF8298A3);}
+ private void toggle(GuiGraphics g,int xx,int yy,boolean on){round(g,xx,yy,xx+42,yy+18,9,on?0xFF2A765E:0xFF2A3941);int k=on?xx+26:xx+3;round(g,k,yy+3,k+12,yy+15,6,on?0xFFA0FFD4:0xFF9BACB4);}
+ private void slider(GuiGraphics g,int xx,int yy,int ww,float v){round(g,xx,yy,xx+ww,yy+6,3,0xFF243641);round(g,xx,yy,xx+(int)(ww*v),yy+6,3,0xFF4FC4ED);int k=xx+(int)(ww*v);round(g,k-5,yy-3,k+6,yy+10,6,0xFFE8F8FE);}
+ private void ring(GuiGraphics g,int cx,int cy,int r,int c){for(int i=0;i<72;i++){double a=i*Math.PI*2/72;int xx=cx+(int)(Math.cos(a)*r),yy=cy+(int)(Math.sin(a)*r);g.fill(xx,yy,xx+1,yy+1,c);}}
+ private int pri(PokemonInfo p){if(p.shiny())return 100;if(p.legendary()||p.mythical())return 90;if(p.ultraBeast()||p.paradox())return 80;if(p.boss())return 70;return 0;}private int accent(PokemonInfo p){if(p.shiny())return 0xFF62FFFF;if(p.legendary()||p.mythical())return 0xFFFFB64F;if(p.ultraBeast()||p.paradox())return 0xFFB987FF;if(p.boss())return 0xFFFF6666;return 0xFF4FC4ED;}private String dir(PokemonInfo p){var mc=minecraft;double dx=p.pos().getX()+.5-mc.player.getX(),dz=p.pos().getZ()+.5-mc.player.getZ();double a=(Math.toDegrees(Math.atan2(-dx,dz))+360)%360;String[]d={"N","NE","E","SE","S","SW","W","NW"};return d[(int)Math.round(a/45)%8];}
+ @Override public boolean mouseClicked(double mx,double my,int b){if(my>=y+11&&my<=y+33){if(mx>=x+w-232&&mx<x+w-164)return page(Page.RADAR);if(mx>=x+w-160&&mx<x+w-92)return page(Page.FILTERS);if(mx>=x+w-88&&mx<x+w-16)return page(Page.SETTINGS);}if(page==Page.RADAR){int lx=x+278,top=y+88;for(int i=0;i<Math.min(5,visible.size());i++){int yy=top+i*45;if(mx>=lx&&mx<=x+w-16&&my>=yy&&my<=yy+39){int id=visible.get(i).entityId();RadarSettings.trackedEntityId=RadarSettings.trackedEntityId==id?-1:id;RadarSettings.save();return true;}}}else if(page==Page.FILTERS){if(my>=y+123&&my<=y+163){RadarSettings.shinyOnly=!RadarSettings.shinyOnly;RadarSettings.save();return true;}if(my>=y+171&&my<=y+211){RadarSettings.rareOnly=!RadarSettings.rareOnly;RadarSettings.save();return true;}int xx=x+24,yy=y+253;for(RadarSettings.SortMode m:RadarSettings.SortMode.values()){int ww=font.width(m.name())+24;if(mx>=xx&&mx<=xx+ww&&my>=yy&&my<=yy+24){RadarSettings.sortMode=m;RadarSettings.save();return true;}xx+=ww+8;}}else{if(my>=y+123&&my<=y+163){RadarSettings.hudEnabled=!RadarSettings.hudEnabled;RadarSettings.save();return true;}if(my>=y+170&&my<=y+210){RadarSettings.alertsEnabled=!RadarSettings.alertsEnabled;RadarSettings.save();return true;}if(my>=y+217&&my<=y+257){RadarSettings.alertSound=!RadarSettings.alertSound;RadarSettings.save();return true;}int sy=y+312;if(my>=sy-5&&my<=sy+15&&mx>=x+24&&mx<=x+w-24){double v=(mx-(x+24))/(double)(w-48);RadarSettings.pokemonRange=32+(int)Math.round(Math.max(0,Math.min(1,v))*7)*32;RadarSettings.save();return true;}}return super.mouseClicked(mx,my,b);}
+ private boolean page(Page p){if(page!=p){page=p;changed=System.currentTimeMillis();}return true;}private static float ease(float t){return 1-(1-t)*(1-t)*(1-t);}private static void round(GuiGraphics g,int l,int t,int r,int b,int rad,int c){if(r<=l||b<=t)return;rad=Math.max(1,Math.min(rad,Math.min((r-l)/2,(b-t)/2)));g.fill(l+rad,t,r-rad,b,c);g.fill(l,t+rad,r,b-rad,c);for(int i=0;i<rad;i++){int in=(int)Math.ceil(rad-Math.sqrt(Math.max(0,rad*rad-(rad-i)*(rad-i))));g.fill(l+in,t+i,r-in,b-i,c);}}@Override public void onClose(){RadarSettings.save();super.onClose();}@Override public boolean isPauseScreen(){return false;}}

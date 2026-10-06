@@ -11,5 +11,9 @@ public final class RadarSettings {
     public static int oreRange = 24;
     public static boolean shinyOnly = false;
     public static boolean rareOnly = false;
+    public static String search = "";
+    public static SortMode sortMode = SortMode.DISTANCE;
+    public static int trackedEntityId = -1;
     public static final Set<String> selectedOres = new LinkedHashSet<>();
+    public enum SortMode { DISTANCE, LEVEL, NAME, RARITY }
 }

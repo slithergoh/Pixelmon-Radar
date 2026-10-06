@@ -24,7 +24,8 @@ import java.util.Set;
 public final class BlockEspHud {
  private BlockEspHud(){}
  private record Tag(BlockPos pos,float nx,float ny,double distance,ResourceLocation id,ItemStack stack,String name,int count){}
- private static volatile List<Tag> frameTags=List.of();\n private static long lastGoodCaptureNanos=0L;
+ private static volatile List<Tag> frameTags=List.of();
+ private static long lastGoodCaptureNanos=0L;
 
  // Capture positions using Minecraft's real world matrices. Nothing is drawn here.
  @SubscribeEvent public static void capture(RenderLevelStageEvent e){

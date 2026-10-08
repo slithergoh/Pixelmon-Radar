@@ -12,7 +12,7 @@ public final class AtlasClickScreen extends Screen{
  private int x,y,w=440,h=330,dragX,dragY,scroll;private OreScanner.Category category=OreScanner.Category.USEFUL;
  private boolean dragging,resizing;private int resizeW,resizeH,resizeX,resizeY;private EditBox targetInput;
  private List<PokemonInfo>pokemon=List.of();
- public AtlasClickScreen(){super(Component.literal("Atlas ClickGUI"));}
+ public AtlasClickScreen(){this(false);}public AtlasClickScreen(boolean blocks){super(Component.literal("Atlas ClickGUI"));if(blocks)tab=Tab.BLOCKS;}
  @Override protected void init(){w=Math.min(Math.max(310,RadarSettings.uiWidth),width-12);h=Math.min(Math.max(230,RadarSettings.uiHeight),height-12);opacity=RadarSettings.uiOpacity;x=RadarSettings.uiX<0?(width-w)/2:Math.max(0,Math.min(width-w,RadarSettings.uiX));y=RadarSettings.uiY<0?(height-h)/2:Math.max(0,Math.min(height-h,RadarSettings.uiY));targetInput=new EditBox(font,x+16,y+77,w-96,18,Component.literal("Pokemon name"));targetInput.setHint(Component.literal("Pokemon name..."));targetInput.setMaxLength(50);addRenderableWidget(targetInput);syncInput();}
  @Override public void renderBackground(GuiGraphics g,int mx,int my,float pt){}
  @Override public void render(GuiGraphics g,int mx,int my,float pt){pokemon=PokemonScanner.scan();rect(g,x,y,w,h,(opacity<<24)|0x0B1219);rect(g,x,y,w,28,0xFF172A35);g.drawString(font,"ATLAS",x+12,y+10,0xFFFFFFFF,true);g.drawString(font,"DRAG TO MOVE",x+w-94,y+10,0xFF7895A5,false);

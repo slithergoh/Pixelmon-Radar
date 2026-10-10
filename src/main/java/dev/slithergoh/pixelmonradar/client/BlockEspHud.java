@@ -15,6 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector4f;
 import java.util.*;
 
@@ -38,7 +39,10 @@ public final class BlockEspHud {
   List<Vein> veins=new ArrayList<>(buildVeins(mc));
   veins.sort(Comparator.comparingInt(Vein::priority).reversed().thenComparingDouble(Vein::distance));
   Vec3 cam=mc.gameRenderer.getMainCamera().getPosition();
-  Matrix4f world=new Matrix4f(e.getModelViewMatrix()).translate((float)-cam.x,(float)-cam.y,(float)-cam.z);
+  // RenderLevelStageEvent model-view is not guaranteed to be a pure camera view.
+  // Use the actual camera quaternion and camera-relative positions to avoid
+  // applying view rotation/translation twice at steep pitch angles.
+  Quaternionf inverseCamera=new Quaternionf(mc.gameRenderer.getMainCamera().rotation()).conjugate();
   Matrix4f projection=new Matrix4f(e.getProjectionMatrix());
   Set<BlockPos> alive=new HashSet<>();
   int accepted=0,max=Math.max(4,Math.min(24,RadarSettings.espMaxIcons));
@@ -46,7 +50,7 @@ public final class BlockEspHud {
   for(Vein v:veins){
    if(accepted>=max)break;
    alive.add(v.anchor);
-   Vector4f clip=new Vector4f(v.anchor.getX()+.5f,v.anchor.getY()+1.10f,v.anchor.getZ()+.5f,1f).mul(world).mul(projection);
+   Vector4f clip=new Vector4f((float)(v.anchor.getX()+.5-cam.x),(float)(v.anchor.getY()+.5-cam.y),(float)(v.anchor.getZ()+.5-cam.z),1f).rotate(inverseCamera).mul(projection);
    if(clip.w<=0.001f)continue;
    float x=clip.x/clip.w,y=clip.y/clip.w,z=clip.z/clip.w;
    if(z<-1f||z>1f||x<-1.2f||x>1.2f||y<-1.2f||y>1.2f)continue;

@@ -65,7 +65,7 @@ public final class AtlasClickScreen extends Screen{
    boolean hover=mx>=xx&&mx<xx+cell-4&&my>=yy&&my<yy+64;
    rect(g,xx,yy,cell-4,64,watched?0xFF51313C:hover?0xFF353039:0xFF242129);
    if(watched)rect(g,xx,yy,cell-4,2,RED);
-   ResourceLocation sprite=e.sprite();
+   ResourceLocation sprite=SpeciesCatalog.sprite(e);
    if(sprite==null){for(PokemonInfo p:pokemon)if(p.name().equalsIgnoreCase(e.name())){sprite=p.sprite();break;}}
    if(sprite!=null)g.blit(sprite,xx+(cell-4-36)/2,yy+4,0,0,36,36,36,36);
    else g.drawCenteredString(font,"?",xx+(cell-4)/2,yy+18,0xFFAB8893);

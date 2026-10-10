@@ -7,18 +7,18 @@ import java.util.*;
 public final class SpeciesCatalog {
  private SpeciesCatalog(){}
  public record Entry(String name,String key,ResourceLocation sprite){}
- private static List<Entry> all;
+ private static List<Entry> all;private static final Map<String,Object> speciesByName=new HashMap<>();private static final Map<String,ResourceLocation> spriteCache=new HashMap<>();private static final Set<String> missingSprites=new HashSet<>();
  public static List<Entry> all(){
   if(all!=null)return all;
   List<Entry> out=new ArrayList<>();
   try{
    Class<?> registry=Class.forName("com.pixelmonmod.pixelmon.api.pokemon.species.PokemonSpecies");
    Object species=registry.getMethod("getAll").invoke(null);
-   if(species instanceof Iterable<?> entries)for(Object s:entries){
+   Iterable<?> entries=species instanceof Iterable<?> iterable?iterable:species instanceof Map<?,?> map?map.values():List.of();for(Object s:entries){
     String name=String.valueOf(s.getClass().getMethod("getName").invoke(s));
     if(name.isBlank())continue;
-    ResourceLocation sprite=sprite(s);
-    out.add(new Entry(name,name.toLowerCase(Locale.ROOT),sprite));
+    ResourceLocation sprite=null;
+    out.add(new Entry(name,name.toLowerCase(Locale.ROOT),sprite));speciesByName.put(name.toLowerCase(Locale.ROOT),s);
    }
   }catch(ReflectiveOperationException|LinkageError ignored){}
   out.sort(Comparator.comparing(Entry::name,String.CASE_INSENSITIVE_ORDER));
@@ -26,7 +26,8 @@ public final class SpeciesCatalog {
   if(!out.isEmpty())all=List.copyOf(out);
   return out;
  }
- private static ResourceLocation sprite(Object species){
+ public static ResourceLocation sprite(Entry entry){if(spriteCache.containsKey(entry.key()))return spriteCache.get(entry.key());if(missingSprites.contains(entry.key()))return null;ResourceLocation value=sprite(speciesByName.get(entry.key()));if(value!=null)spriteCache.put(entry.key(),value);else missingSprites.add(entry.key());return value;}
+ private static ResourceLocation sprite(Object species){if(species==null)return null;
   try{
    // Use the sprite supplied by a normal Pixelmon Pokemon instance.
    for(Method factory:species.getClass().getMethods()){
@@ -36,6 +37,7 @@ public final class SpeciesCatalog {
      if(pokemon instanceof Pokemon p)return p.getSprite();
     }
    }
+   for(Constructor<?> ctor:Pokemon.class.getConstructors()){if(ctor.getParameterCount()!=1)continue;Class<?> type=ctor.getParameterTypes()[0];if(type.isInstance(species)){Object obj=ctor.newInstance(species);if(obj instanceof Pokemon p)return p.getSprite();}if(type==String.class){Object obj=ctor.newInstance(String.valueOf(species.getClass().getMethod("getName").invoke(species)));if(obj instanceof Pokemon p)return p.getSprite();}}
   }catch(ReflectiveOperationException|RuntimeException ignored){}
   return null;
  }

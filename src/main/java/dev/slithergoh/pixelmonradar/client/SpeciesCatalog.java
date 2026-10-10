@@ -12,7 +12,7 @@ public final class SpeciesCatalog {
   if(all!=null)return all;
   List<Entry> out=new ArrayList<>();
   try{
-   Class<?> registry=Class.forName("com.pixelmonmod.pixelmon.api.pokemon.species.PokemonSpecies");
+   Class<?> registry=Class.forName("com.pixelmonmod.pixelmon.api.registries.PixelmonSpecies");
    Object species=registry.getMethod("getAll").invoke(null);
    Iterable<?> entries=species instanceof Iterable<?> iterable?iterable:species instanceof Map<?,?> map?map.values():List.of();for(Object s:entries){
     String name=String.valueOf(s.getClass().getMethod("getName").invoke(s));
@@ -44,7 +44,7 @@ public final class SpeciesCatalog {
  public static List<Entry> search(String text){
   String q=text.trim().toLowerCase(Locale.ROOT);
   List<Entry> result=new ArrayList<>();
-  for(Entry e:all())if(q.isEmpty()||e.key().contains(q)){result.add(e);if(result.size()>=300)break;}
+  for(Entry e:all())if(q.isEmpty()||e.key().contains(q)){result.add(e);}
   return result;
  }
 }

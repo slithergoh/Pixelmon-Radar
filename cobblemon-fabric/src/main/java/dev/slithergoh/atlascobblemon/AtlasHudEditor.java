@@ -11,6 +11,7 @@ public final class AtlasHudEditor extends Screen{
   g.drawCenteredTextWithShadow(textRenderer,"ATLAS HUD EDITOR  •  Drag widgets  •  ESC to save",width/2,18,0xFFF4D9E0);
   panel(g,s.hudX,s.hudY,190,100,"POKEMON RADAR",0xFFDA3657);
   panel(g,s.trackerX,s.trackerY,190,50,"POKEMON TRACKER",0xFFCA7790);
+  panel(g,s.partyX,s.partyY,190,90,"PARTY HUD",0xFFBD7994);
   super.render(g,mx,my,delta);
  }
  private void panel(DrawContext g,int x,int y,int w,int h,String title,int accent){
@@ -20,6 +21,7 @@ public final class AtlasHudEditor extends Screen{
  }
  @Override public boolean mouseClicked(double mx,double my,int button){
   AtlasSettings s=AtlasSettings.INSTANCE;
+  if(mx>=s.partyX&&mx<s.partyX+190&&my>=s.partyY&&my<s.partyY+90){dragging=2;offX=(int)mx-s.partyX;offY=(int)my-s.partyY;return true;}
   if(mx>=s.trackerX&&mx<s.trackerX+190&&my>=s.trackerY&&my<s.trackerY+50){dragging=1;offX=(int)mx-s.trackerX;offY=(int)my-s.trackerY;return true;}
   if(mx>=s.hudX&&mx<s.hudX+190&&my>=s.hudY&&my<s.hudY+100){dragging=0;offX=(int)mx-s.hudX;offY=(int)my-s.hudY;return true;}
   return super.mouseClicked(mx,my,button);
@@ -27,7 +29,7 @@ public final class AtlasHudEditor extends Screen{
  @Override public boolean mouseDragged(double mx,double my,int button,double dx,double dy){
   if(dragging<0)return super.mouseDragged(mx,my,button,dx,dy);
   int x=Math.max(0,Math.min(width-190,(int)mx-offX)),y=Math.max(0,Math.min(height-50,(int)my-offY));
-  if(dragging==0){AtlasSettings.INSTANCE.hudX=x;AtlasSettings.INSTANCE.hudY=y;}else{AtlasSettings.INSTANCE.trackerX=x;AtlasSettings.INSTANCE.trackerY=y;}
+  if(dragging==0){AtlasSettings.INSTANCE.hudX=x;AtlasSettings.INSTANCE.hudY=y;}else if(dragging==1){AtlasSettings.INSTANCE.trackerX=x;AtlasSettings.INSTANCE.trackerY=y;}else{AtlasSettings.INSTANCE.partyX=x;AtlasSettings.INSTANCE.partyY=y;}
   return true;
  }
  @Override public boolean mouseReleased(double mx,double my,int button){if(dragging>=0){dragging=-1;AtlasSettings.save();return true;}return super.mouseReleased(mx,my,button);}

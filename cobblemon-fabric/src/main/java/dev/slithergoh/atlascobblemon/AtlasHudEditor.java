@@ -6,7 +6,7 @@ public final class AtlasHudEditor extends Screen{
  private int dragging=-1,offX,offY;
  public AtlasHudEditor(){super(Text.literal("Atlas HUD Editor"));}
  @Override public void render(DrawContext g,int mx,int my,float delta){
-  renderBackground(g,mx,my,delta);
+  g.fill(0,0,width,height,0x87000000);
   AtlasSettings s=AtlasSettings.INSTANCE;
   g.drawCenteredTextWithShadow(textRenderer,"ATLAS HUD EDITOR  •  Drag widgets  •  ESC to save",width/2,18,0xFFF4D9E0);
   panel(g,s.hudX,s.hudY,190,100,"POKEMON RADAR",0xFFDA3657);

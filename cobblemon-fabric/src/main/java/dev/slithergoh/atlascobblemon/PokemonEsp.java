@@ -24,7 +24,7 @@ public final class PokemonEsp {
    outline(g,entity.getBoundingBox().expand(.07),color);
   }
  }
- private static void outline(DrawContext g,Box b,int color){
+ public static void outline(DrawContext g,Box b,int color){
   MinecraftClient mc=MinecraftClient.getInstance();
   var camera=mc.gameRenderer.getCamera();
   Vec3d eye=camera.getPos();

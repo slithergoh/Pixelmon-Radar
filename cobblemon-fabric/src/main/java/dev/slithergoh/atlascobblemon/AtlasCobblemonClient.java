@@ -40,7 +40,7 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
    alerted.retainAll(live);
   });
   HudRenderCallback.EVENT.register((draw,tick)->{
-   MinecraftClient mc=MinecraftClient.getInstance();BlockRadar.draw(draw);if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
+   MinecraftClient mc=MinecraftClient.getInstance();BlockRadar.draw(draw);PokemonEsp.draw(draw);if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
    AtlasSettings settings=AtlasSettings.INSTANCE;int x=settings.hudX,y=settings.hudY;draw.fill(x,y,x+186,y+19+Math.min(visible.size(),9)*13,0xB6090A10);
    draw.fill(x,y,x+3,y+19+Math.min(visible.size(),9)*13,0xFFD52C4D);
    draw.drawTextWithShadow(mc.textRenderer,"ATLAS  •  COBBLEMON",x+9,y+5,0xFFF6D8DF);

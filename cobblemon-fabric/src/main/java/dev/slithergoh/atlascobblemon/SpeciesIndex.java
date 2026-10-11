@@ -19,7 +19,7 @@ public final class SpeciesIndex {
    Class<?> cls=Class.forName("com.cobblemon.mod.common.api.pokemon.PokemonSpecies");
    Object instance=field(cls,"INSTANCE");if(instance==null)instance=field(cls,"Companion");if(instance==null)instance=field(cls,"INSTANCE");
    for(String method:List.of("getSpecies","getAll","getSpeciesByIdentifier")){
-    Object value=invoke(instance,method);
+    Object value=invoke(instance,method);if(value==null)try{value=cls.getMethod(method).invoke(null);}catch(Exception ignored){}
     if(value instanceof Map<?,?> map)for(Object v:map.values())add(out,v);
     else if(value instanceof Iterable<?> list)for(Object v:list)add(out,v);
    }

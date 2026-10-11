@@ -52,6 +52,11 @@ public final class AtlasScreen extends Screen {
     Block block=Registries.BLOCK.get(id);ItemStack stack=new ItemStack(block.asItem());if(!stack.isEmpty())g.drawItem(stack,x+17,py+2);
     line(g,block.getName().getString(),x+40,py+6,0xFFE9DFE5);line(g,s.blocks.contains(id.toString())?"ON":"OFF",x+373,py+6,0xFFDF9FAE);
    }
+  }else if(tab==Tab.HUD){
+   line(g,"HUD EDITOR",x+14,yy,RED);
+   line(g,"Reposition Radar, Tracker and Party panels",x+14,yy+28,0xFFE7DCE1);
+   g.fill(x+14,yy+52,x+400,yy+88,0xFF652438);
+   line(g,"OPEN HUD EDITOR",x+26,yy+64,0xFFFFE1E9);
   }else{
    line(g,"SETTINGS",x+14,yy,RED);
    String[] opts={"HUD: "+s.hud,"BLOCK ESP: "+s.esp,"RARE ALERTS: "+s.alerts,"ALERT SOUNDS: "+s.alertSound,"HIDE OWNED: "+s.hideOwned,"SHINY ONLY: "+s.shinyOnly,"RARE ONLY: "+s.rareOnly,"POKEMON RANGE: "+s.pokemonRange+"m","BLOCK RANGE: "+s.blockRange+"m","PARTY HUD: "+s.partyHud};
@@ -65,7 +70,7 @@ public final class AtlasScreen extends Screen {
   if(tab==Tab.BLOCKS&&my>=yy&&my<yy+20){s.esp=!s.esp;AtlasSettings.save();return true;}
   if(tab==Tab.BLOCKS&&my>=yy+48&&my<yy+48+9*21){int row=((int)my-yy-48)/21;String q=search.getText().toLowerCase(Locale.ROOT);int i=0;for(Identifier id:Registries.BLOCK.getIds()){Block b=Registries.BLOCK.get(id);if(!id.toString().toLowerCase(Locale.ROOT).contains(q)&&!b.getName().getString().toLowerCase(Locale.ROOT).contains(q))continue;if(i++<scroll)continue;if(i-scroll-1==row){if(!s.blocks.add(id.toString()))s.blocks.remove(id.toString());AtlasSettings.save();return true;}}}
   if(tab==Tab.RADAR&&my>=yy+17&&my<yy+17+12*16){int row=((int)my-yy-17)/16;if(row>=0&&row<AtlasCobblemonClient.visible.size()){s.trackedId=AtlasCobblemonClient.visible.get(row).id();AtlasSettings.save();return true;}}
-  if(tab==Tab.HUD&&my>=yy+58&&my<yy+91){client.setScreen(new AtlasHudEditor());return true;}
+  if(tab==Tab.HUD&&my>=yy+52&&my<yy+88){client.setScreen(new AtlasHudEditor());return true;}
   if(tab==Tab.TARGETS&&my>=yy+49&&my<yy+49+3*65){int col=((int)mx-x-12)/79,row=((int)my-yy-49)/65;if(col>=0&&col<5&&row>=0&&row<3){int idx=scroll+row*5+col;List<String> matches=SpeciesIndex.search(search.getText());if(idx<matches.size()){String key=matches.get(idx).toLowerCase(Locale.ROOT);if(!s.targets.add(key))s.targets.remove(key);AtlasSettings.save();return true;}}}
   if(tab==Tab.SETTINGS&&my>=yy+20&&my<yy+20+10*21){int row=((int)my-yy-20)/21;switch(row){case 0->s.hud=!s.hud;case 1->s.esp=!s.esp;case 2->s.alerts=!s.alerts;case 3->s.alertSound=!s.alertSound;case 4->s.hideOwned=!s.hideOwned;case 5->s.shinyOnly=!s.shinyOnly;case 6->s.rareOnly=!s.rareOnly;case 7->s.pokemonRange=s.pokemonRange>=256?32:s.pokemonRange+32;case 8->s.blockRange=s.blockRange>=48?8:s.blockRange+8;case 9->s.partyHud=!s.partyHud;}AtlasSettings.save();return true;}
   return super.mouseClicked(mx,my,button);

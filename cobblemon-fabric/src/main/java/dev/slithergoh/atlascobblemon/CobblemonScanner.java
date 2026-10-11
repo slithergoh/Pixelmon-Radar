@@ -16,7 +16,7 @@ public final class CobblemonScanner {
   MinecraftClient mc=MinecraftClient.getInstance();if(mc.world==null||mc.player==null)return List.of();
   var settings=AtlasSettings.INSTANCE;double range=settings.pokemonRange;
   ArrayList<Pokemon> out=new ArrayList<>();
-  for(Entity entity:mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(range),e->e.getClass().getName().equals("com.cobblemon.mod.common.entity.pokemon.PokemonEntity"))){
+  for(Entity entity:mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(range),CobblemonScanner::isPokemonEntity)){
    Object p=call(entity,"getPokemon");if(p==null)continue;
    Object species=call(p,"getSpecies");
    String name=string(call(species,"getName"),entity.getName().getString());
@@ -37,6 +37,7 @@ public final class CobblemonScanner {
   }
   switch(settings.sortMode){case "LEVEL"->out.sort(Comparator.comparingInt(Pokemon::level).reversed());case "NAME"->out.sort(Comparator.comparing(Pokemon::name,String.CASE_INSENSITIVE_ORDER));case "RARITY"->out.sort(Comparator.comparing(Pokemon::rare).reversed().thenComparingDouble(Pokemon::distance));default->out.sort(Comparator.comparingDouble(Pokemon::distance));}return out;
  }
+ private static boolean isPokemonEntity(Entity e){for(Class<?> cls=e.getClass();cls!=null;cls=cls.getSuperclass())if(cls.getName().equals("com.cobblemon.mod.common.entity.pokemon.PokemonEntity"))return true;return false;}
  private static Object call(Object obj,String name){if(obj==null)return null;try{Method m=obj.getClass().getMethod(name);return m.invoke(obj);}catch(ReflectiveOperationException|LinkageError e){return null;}}
  private static String string(Object v,String fallback){return v==null?fallback:String.valueOf(v);}
  private static int number(Object v,int fallback){return v instanceof Number n?n.intValue():fallback;}

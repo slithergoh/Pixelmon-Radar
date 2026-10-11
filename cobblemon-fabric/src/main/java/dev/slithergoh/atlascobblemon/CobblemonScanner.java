@@ -31,6 +31,8 @@ public final class CobblemonScanner {
    boolean legendary=LEGENDARY.contains(key),mythical=MYTHICAL.contains(key);
    if(!wildOnly&&settings.shinyOnly&&!shiny)continue;
    if(!wildOnly&&settings.rareOnly&&!shiny&&!legendary&&!mythical)continue;
+   if(!wildOnly&&settings.legendaryOnly&&!legendary)continue;
+   if(!wildOnly&&settings.mythicalOnly&&!mythical)continue;
    out.add(new Pokemon(entity.getId(),name,level,shiny,legendary,mythical,owned,mc.player.distanceTo(entity),entity.getBlockPos()));
   }
   out.sort(Comparator.comparingDouble(Pokemon::distance));return out;

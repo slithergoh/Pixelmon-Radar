@@ -16,15 +16,15 @@ public final class CobblemonScanner {
   MinecraftClient mc=MinecraftClient.getInstance();if(mc.world==null||mc.player==null)return List.of();
   var settings=AtlasSettings.INSTANCE;double range=settings.pokemonRange;
   ArrayList<Pokemon> out=new ArrayList<>();
-  for(Entity entity:mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(range),e->Registries.ENTITY_TYPE.getId(e.getType()).getNamespace().equals("cobblemon"))){
+  for(Entity entity:mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(range),e->e.getClass().getName().equals("com.cobblemon.mod.common.entity.pokemon.PokemonEntity"))){
    Object p=call(entity,"getPokemon");if(p==null)continue;
    Object species=call(p,"getSpecies");
    String name=string(call(species,"getName"),entity.getName().getString());
    int level=number(call(p,"getLevel"),1);
    boolean shiny=bool(call(p,"getShiny"))||bool(call(p,"isShiny"));
-   boolean owned=call(p,"getOriginalTrainer")!=null||call(p,"getOwnerUUID")!=null||call(p,"getOwnerUuid")!=null;
+   boolean owned=call(p,"getOwnerUUID")!=null||call(p,"getOwnerUuid")!=null||call(p,"getOwner")!=null;
    // Cobblemon wild entities can also have an owner UUID on the entity itself.
-   owned|=call(entity,"getOwnerUUID")!=null||call(entity,"getOwnerUuid")!=null;
+   owned|=call(entity,"getOwnerUUID")!=null||call(entity,"getOwnerUuid")!=null||call(entity,"getOwner")!=null;
    if(wildOnly&&owned)continue;
    if(!wildOnly&&settings.hideOwned&&owned)continue;
    String key=name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]","");

@@ -45,6 +45,21 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
    draw.fill(x,y,x+3,y+19+Math.min(visible.size(),9)*13,0xFFD52C4D);
    draw.drawTextWithShadow(mc.textRenderer,"ATLAS  •  COBBLEMON",x+9,y+5,0xFFF6D8DF);
    int i=0;for(var p:visible){if(i++>=9)break;int col=p.shiny()?0xFF6CE8E8:p.rare()?0xFFF1B4B4:0xFFE2DCE1;draw.drawTextWithShadow(mc.textRenderer,p.name()+"  Lv."+p.level()+"  "+Math.round(p.distance())+"m",x+9,y+9+i*13,col);}
+   if(settings.partyHud){
+    var party=CobblemonParty.slots();
+    if(!party.isEmpty()){
+     int px=settings.partyX,py=settings.partyY;
+     draw.fill(px,py,px+190,py+19+party.size()*15,0xDC0E0B12);
+     draw.fill(px,py,px+3,py+19+party.size()*15,0xFFD52C4D);
+     draw.drawTextWithShadow(mc.textRenderer,"PARTY  •  "+party.size()+"/6",px+9,py+5,0xFFFFC0D1);
+     int slot=0;for(var p:party){
+      int yy=py+18+slot++*15;
+      String hp=p.maxHp()>0?"  "+p.hp()+"/"+p.maxHp():"";
+      draw.drawTextWithShadow(mc.textRenderer,p.name()+"  Lv."+p.level()+hp,px+9,yy,p.shiny()?0xFF8BE5E8:0xFFEAE0E5);
+      if(p.maxHp()>0){int bar=(int)(Math.max(0,Math.min(1,(double)p.hp()/p.maxHp()))*180);draw.fill(px+8,yy+11,px+8+bar,yy+13,0xFF7DC59B);}
+     }
+    }
+   }
    for(var p:visible)if(p.id()==settings.trackedId){
     int tx=settings.trackerX,ty=settings.trackerY;draw.fill(tx,ty,tx+190,ty+39,0xDC0E0B12);draw.fill(tx,ty,tx+3,ty+39,0xFFD52C4D);
     draw.drawTextWithShadow(mc.textRenderer,"TRACKING  "+p.name(),tx+9,ty+7,0xFFFFB6C9);

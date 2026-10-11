@@ -16,7 +16,7 @@ public final class AtlasScreen extends Screen {
  private int scroll=0;
  private final int RED=0xFFDB3858,BG=0xF20E0D12,PANEL=0xFF201921;
  public AtlasScreen(){super(Text.literal("Atlas Cobblemon"));}
- @Override protected void init(){search=new TextFieldWidget(textRenderer,width/2-190,height/2-110,380,20,Text.literal("Search"));search.setChangedListener(s->scroll=0);addDrawableChild(search);sync();}
+ @Override protected void init(){search=new TextFieldWidget(textRenderer,width/2-190,height/2-61,380,20,Text.literal("Search"));search.setChangedListener(s->scroll=0);addDrawableChild(search);sync();}
  private void sync(){search.setVisible(tab==Tab.TARGETS||tab==Tab.BLOCKS);search.setFocused(false);}
  private int left(){return width/2-210;}private int top(){return height/2-150;}
  private void line(DrawContext g,String s,int x,int y,int color){g.drawTextWithShadow(textRenderer,s,x,y,color);}

@@ -35,7 +35,7 @@ public final class CobblemonScanner {
    if(!wildOnly&&settings.mythicalOnly&&!mythical)continue;
    out.add(new Pokemon(entity.getId(),name,level,shiny,legendary,mythical,owned,mc.player.distanceTo(entity),entity.getBlockPos()));
   }
-  out.sort(Comparator.comparingDouble(Pokemon::distance));return out;
+  switch(settings.sortMode){case "LEVEL"->out.sort(Comparator.comparingInt(Pokemon::level).reversed());case "NAME"->out.sort(Comparator.comparing(Pokemon::name,String.CASE_INSENSITIVE_ORDER));case "RARITY"->out.sort(Comparator.comparing(Pokemon::rare).reversed().thenComparingDouble(Pokemon::distance));default->out.sort(Comparator.comparingDouble(Pokemon::distance));}return out;
  }
  private static Object call(Object obj,String name){if(obj==null)return null;try{Method m=obj.getClass().getMethod(name);return m.invoke(obj);}catch(ReflectiveOperationException|LinkageError e){return null;}}
  private static String string(Object v,String fallback){return v==null?fallback:String.valueOf(v);}

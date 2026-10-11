@@ -21,7 +21,7 @@ public final class AtlasScreen extends Screen {
  private int left(){return width/2-210;}private int top(){return height/2-150;}
  private void line(DrawContext g,String s,int x,int y,int color){g.drawTextWithShadow(textRenderer,s,x,y,color);}
  @Override public void render(DrawContext g,int mx,int my,float delta){
-  renderBackground(g,mx,my,delta);int x=left(),y=top();g.fill(x,y,x+420,y+300,BG);g.fill(x,y,x+420,y+3,RED);
+  g.fill(0,0,width,height,0xA9000000);int x=left(),y=top();g.fill(x,y,x+420,y+300,BG);g.fill(x,y,x+420,y+3,RED);
   line(g,"ATLAS  /  COBBLEMON",x+14,y+13,0xFFF5E9ED);line(g,"Fabric 1.21.1",x+316,y+13,0xFFB29BA4);
   int j=0;for(Tab t:Tab.values()){int xx=x+12+j++*67;g.fill(xx,y+36,xx+63,y+59,tab==t?0xFF76243A:PANEL);line(g,t.name(),xx+8,y+43,0xFFF6E5EB);}
   int yy=y+68;AtlasSettings s=AtlasSettings.INSTANCE;

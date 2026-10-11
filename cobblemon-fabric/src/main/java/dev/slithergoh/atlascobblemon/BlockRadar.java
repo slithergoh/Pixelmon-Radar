@@ -49,6 +49,7 @@ public final class BlockRadar {
    double nx=(dx*right.x+dy*right.y+dz*right.z)/(z*tan*aspect),ny=(dx*up.x+dy*up.y+dz*up.z)/(z*tan);
    if(Math.abs(nx)>1||Math.abs(ny)>1)continue;
    int x=(int)((nx+1)*sw*.5),y=(int)((1-ny)*sh*.5);
+   PokemonEsp.outline(g,new net.minecraft.util.math.Box(b.getX(),b.getY(),b.getZ(),b.getX()+1,b.getY()+1,b.getZ()+1),0xFFDC3556);
    String name=Registries.BLOCK.get(net.minecraft.util.Identifier.of(e.getValue())).getName().getString();
    int distance=(int)Math.sqrt(b.getSquaredDistance(mc.player.getBlockPos()));
    String label=name+"  "+distance+"m";int w=mc.textRenderer.getWidth(label)+10;

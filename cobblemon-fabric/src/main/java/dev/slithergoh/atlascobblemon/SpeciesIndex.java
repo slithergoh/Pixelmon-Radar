@@ -17,7 +17,7 @@ public final class SpeciesIndex {
   }catch(Throwable ignored){}
   try{
    Class<?> cls=Class.forName("com.cobblemon.mod.common.api.pokemon.PokemonSpecies");
-   Object instance=field(cls,"INSTANCE");if(instance==null)instance=field(cls,"Companion");
+   Object instance=field(cls,"INSTANCE");if(instance==null)instance=field(cls,"Companion");if(instance==null)instance=field(cls,"INSTANCE");
    for(String method:List.of("getSpecies","getAll","getSpeciesByIdentifier")){
     Object value=invoke(instance,method);
     if(value instanceof Map<?,?> map)for(Object v:map.values())add(out,v);
@@ -35,7 +35,7 @@ public final class SpeciesIndex {
   result.addAll(AtlasSettings.INSTANCE.targets);
   return result.stream().filter(s->s.toLowerCase(Locale.ROOT).contains(q)).toList();
  }
- private static void add(Set<String> out,Object obj){Object name=invoke(obj,"getName");if(name instanceof String s&&!s.isBlank())out.add(s);}
+ private static void add(Set<String> out,Object obj){Object name=invoke(obj,"getName");if(name instanceof String s&&!s.isBlank())out.add(s);else{Object id=invoke(obj,"getResourceIdentifier");if(id!=null)out.add(String.valueOf(id).replaceFirst("^.*:",""));}}
  private static Object field(Class<?> cls,String name){try{Field f=cls.getField(name);return f.get(null);}catch(Exception ignored){return null;}}
  private static Object invoke(Object obj,String method){if(obj==null)return null;try{return obj.getClass().getMethod(method).invoke(obj);}catch(Exception ignored){return null;}}
 }

@@ -26,7 +26,7 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
    while(toggleHud.wasPressed()){AtlasSettings.INSTANCE.hud=!AtlasSettings.INSTANCE.hud;AtlasSettings.save();}
    while(toggleEsp.wasPressed()){AtlasSettings.INSTANCE.esp=!AtlasSettings.INSTANCE.esp;AtlasSettings.save();}
    if(mc.world==null||mc.player==null){alerted.clear();visible=List.of();return;}
-   if(++ticks%5!=0)return;
+   BlockRadar.tick();if(++ticks%5!=0)return;
    visible=CobblemonScanner.scan(false);
    var wild=CobblemonScanner.scan(true);Set<Integer> live=new HashSet<>();
    for(var p:wild){
@@ -40,7 +40,7 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
    alerted.retainAll(live);
   });
   HudRenderCallback.EVENT.register((draw,tick)->{
-   MinecraftClient mc=MinecraftClient.getInstance();if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
+   MinecraftClient mc=MinecraftClient.getInstance();BlockRadar.draw(draw);if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
    int x=7,y=7;draw.fill(x,y,x+186,y+19+Math.min(visible.size(),9)*13,0xB6090A10);
    draw.fill(x,y,x+3,y+19+Math.min(visible.size(),9)*13,0xFFD52C4D);
    draw.drawTextWithShadow(mc.textRenderer,"ATLAS  •  COBBLEMON",x+9,y+5,0xFFF6D8DF);

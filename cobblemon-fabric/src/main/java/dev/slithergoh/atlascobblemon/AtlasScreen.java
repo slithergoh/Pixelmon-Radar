@@ -54,7 +54,7 @@ public final class AtlasScreen extends Screen {
    }
   }else{
    line(g,"SETTINGS",x+14,yy,RED);
-   String[] opts={"HUD: "+s.hud,"BLOCK ESP: "+s.esp,"RARE ALERTS: "+s.alerts,"ALERT SOUNDS: "+s.alertSound,"HIDE OWNED: "+s.hideOwned,"SHINY ONLY: "+s.shinyOnly,"RARE ONLY: "+s.rareOnly,"POKEMON RANGE: "+s.pokemonRange+"m","BLOCK RANGE: "+s.blockRange+"m"};
+   String[] opts={"HUD: "+s.hud,"BLOCK ESP: "+s.esp,"RARE ALERTS: "+s.alerts,"ALERT SOUNDS: "+s.alertSound,"HIDE OWNED: "+s.hideOwned,"SHINY ONLY: "+s.shinyOnly,"RARE ONLY: "+s.rareOnly,"POKEMON RANGE: "+s.pokemonRange+"m","BLOCK RANGE: "+s.blockRange+"m","PARTY HUD: "+s.partyHud};
    for(int i=0;i<opts.length;i++){int py=yy+20+i*21;g.fill(x+12,py,x+407,py+19,PANEL);line(g,opts[i],x+19,py+5,0xFFF2E6EA);}
   }
   super.render(g,mx,my,delta);
@@ -67,7 +67,7 @@ public final class AtlasScreen extends Screen {
   if(tab==Tab.RADAR&&my>=yy+17&&my<yy+17+12*16){int row=((int)my-yy-17)/16;if(row>=0&&row<AtlasCobblemonClient.visible.size()){s.trackedId=AtlasCobblemonClient.visible.get(row).id();AtlasSettings.save();return true;}}
   if(tab==Tab.HUD&&my>=yy+58&&my<yy+91){client.setScreen(new AtlasHudEditor());return true;}
   if(tab==Tab.TARGETS&&my>=yy+49&&my<yy+49+3*65){int col=((int)mx-x-12)/79,row=((int)my-yy-49)/65;if(col>=0&&col<5&&row>=0&&row<3){int idx=scroll+row*5+col;List<String> matches=SpeciesIndex.search(search.getText());if(idx<matches.size()){String key=matches.get(idx).toLowerCase(Locale.ROOT);if(!s.targets.add(key))s.targets.remove(key);AtlasSettings.save();return true;}}}
-  if(tab==Tab.SETTINGS&&my>=yy+20&&my<yy+20+9*21){int row=((int)my-yy-20)/21;switch(row){case 0->s.hud=!s.hud;case 1->s.esp=!s.esp;case 2->s.alerts=!s.alerts;case 3->s.alertSound=!s.alertSound;case 4->s.hideOwned=!s.hideOwned;case 5->s.shinyOnly=!s.shinyOnly;case 6->s.rareOnly=!s.rareOnly;case 7->s.pokemonRange=s.pokemonRange>=256?32:s.pokemonRange+32;case 8->s.blockRange=s.blockRange>=48?8:s.blockRange+8;}AtlasSettings.save();return true;}
+  if(tab==Tab.SETTINGS&&my>=yy+20&&my<yy+20+10*21){int row=((int)my-yy-20)/21;switch(row){case 0->s.hud=!s.hud;case 1->s.esp=!s.esp;case 2->s.alerts=!s.alerts;case 3->s.alertSound=!s.alertSound;case 4->s.hideOwned=!s.hideOwned;case 5->s.shinyOnly=!s.shinyOnly;case 6->s.rareOnly=!s.rareOnly;case 7->s.pokemonRange=s.pokemonRange>=256?32:s.pokemonRange+32;case 8->s.blockRange=s.blockRange>=48?8:s.blockRange+8;case 9->s.partyHud=!s.partyHud;}AtlasSettings.save();return true;}
   return super.mouseClicked(mx,my,button);
  }
  @Override public boolean mouseScrolled(double mx,double my,double horizontal,double vertical){if(tab==Tab.BLOCKS||tab==Tab.TARGETS){scroll=Math.max(0,scroll+(vertical<0?(tab==Tab.TARGETS?5:3):-(tab==Tab.TARGETS?5:3)));return true;}return super.mouseScrolled(mx,my,horizontal,vertical);}

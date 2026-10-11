@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import java.util.*;
 public final class AtlasScreen extends Screen {
- private enum Tab{RADAR,TARGETS,BLOCKS,HUD,SETTINGS}
+ private enum Tab{RADAR,TARGETS,BLOCKS,FILTERS,HUD,SETTINGS}
  private Tab tab=Tab.RADAR;
  private TextFieldWidget search;
  private int scroll=0;
@@ -23,7 +23,7 @@ public final class AtlasScreen extends Screen {
  @Override public void render(DrawContext g,int mx,int my,float delta){
   renderBackground(g,mx,my,delta);int x=left(),y=top();g.fill(x,y,x+420,y+300,BG);g.fill(x,y,x+420,y+3,RED);
   line(g,"ATLAS  /  COBBLEMON",x+14,y+13,0xFFF5E9ED);line(g,"Fabric 1.21.1",x+316,y+13,0xFFB29BA4);
-  int j=0;for(Tab t:Tab.values()){int xx=x+12+j++*80;g.fill(xx,y+36,xx+76,y+59,tab==t?0xFF76243A:PANEL);line(g,t.name(),xx+8,y+43,0xFFF6E5EB);}
+  int j=0;for(Tab t:Tab.values()){int xx=x+12+j++*67;g.fill(xx,y+36,xx+63,y+59,tab==t?0xFF76243A:PANEL);line(g,t.name(),xx+8,y+43,0xFFF6E5EB);}
   int yy=y+68;AtlasSettings s=AtlasSettings.INSTANCE;
   if(tab==Tab.RADAR){
    line(g,"NEARBY POKEMON  /  "+AtlasCobblemonClient.visible.size(),x+14,yy,RED);
@@ -52,6 +52,10 @@ public final class AtlasScreen extends Screen {
     Block block=Registries.BLOCK.get(id);ItemStack stack=new ItemStack(block.asItem());if(!stack.isEmpty())g.drawItem(stack,x+17,py+2);
     line(g,block.getName().getString(),x+40,py+6,0xFFE9DFE5);line(g,s.blocks.contains(id.toString())?"ON":"OFF",x+373,py+6,0xFFDF9FAE);
    }
+  }else if(tab==Tab.FILTERS){
+   line(g,"POKEMON FILTERS",x+14,yy,RED);
+   String[] filters={"SHINY ONLY: "+s.shinyOnly,"RARE ONLY: "+s.rareOnly,"LEGENDARY ONLY: "+s.legendaryOnly,"MYTHICAL ONLY: "+s.mythicalOnly,"HIDE OWNED: "+s.hideOwned,"SORT: "+s.sortMode};
+   for(int i=0;i<filters.length;i++){int py=yy+20+i*27;g.fill(x+12,py,x+407,py+24,PANEL);line(g,filters[i],x+20,py+8,0xFFEDE1E7);}
   }else if(tab==Tab.HUD){
    line(g,"HUD EDITOR",x+14,yy,RED);
    line(g,"Reposition Radar, Tracker and Party panels",x+14,yy+28,0xFFE7DCE1);
@@ -65,13 +69,18 @@ public final class AtlasScreen extends Screen {
   super.render(g,mx,my,delta);
  }
  @Override public boolean mouseClicked(double mx,double my,int button){
-  int x=left(),y=top();if(my>=y+36&&my<y+59&&mx>=x+12&&mx<x+416){int i=(int)(mx-x-12)/80;if(i>=0&&i<Tab.values().length){tab=Tab.values()[i];scroll=0;sync();return true;}}
+  int x=left(),y=top();if(my>=y+36&&my<y+59&&mx>=x+12&&mx<x+416){int i=(int)(mx-x-12)/67;if(i>=0&&i<Tab.values().length){tab=Tab.values()[i];scroll=0;sync();return true;}}
   AtlasSettings s=AtlasSettings.INSTANCE;int yy=y+68;
   if(tab==Tab.BLOCKS&&my>=yy&&my<yy+20){s.esp=!s.esp;AtlasSettings.save();return true;}
   if(tab==Tab.BLOCKS&&my>=yy+48&&my<yy+48+9*21){int row=((int)my-yy-48)/21;String q=search.getText().toLowerCase(Locale.ROOT);int i=0;for(Identifier id:Registries.BLOCK.getIds()){Block b=Registries.BLOCK.get(id);if(!id.toString().toLowerCase(Locale.ROOT).contains(q)&&!b.getName().getString().toLowerCase(Locale.ROOT).contains(q))continue;if(i++<scroll)continue;if(i-scroll-1==row){if(!s.blocks.add(id.toString()))s.blocks.remove(id.toString());AtlasSettings.save();return true;}}}
   if(tab==Tab.RADAR&&my>=yy+17&&my<yy+17+12*16){int row=((int)my-yy-17)/16;if(row>=0&&row<AtlasCobblemonClient.visible.size()){s.trackedId=AtlasCobblemonClient.visible.get(row).id();AtlasSettings.save();return true;}}
   if(tab==Tab.HUD&&my>=yy+52&&my<yy+88){client.setScreen(new AtlasHudEditor());return true;}
   if(tab==Tab.TARGETS&&my>=yy+49&&my<yy+49+3*65){int col=((int)mx-x-12)/79,row=((int)my-yy-49)/65;if(col>=0&&col<5&&row>=0&&row<3){int idx=scroll+row*5+col;List<String> matches=SpeciesIndex.search(search.getText());if(idx<matches.size()){String key=matches.get(idx).toLowerCase(Locale.ROOT);if(!s.targets.add(key))s.targets.remove(key);AtlasSettings.save();return true;}}}
+  if(tab==Tab.FILTERS&&my>=yy+20&&my<yy+20+6*27){
+   int row=((int)my-yy-20)/27;
+   switch(row){case 0->s.shinyOnly=!s.shinyOnly;case 1->s.rareOnly=!s.rareOnly;case 2->s.legendaryOnly=!s.legendaryOnly;case 3->s.mythicalOnly=!s.mythicalOnly;case 4->s.hideOwned=!s.hideOwned;case 5->{String[] modes={"DISTANCE","LEVEL","NAME","RARITY"};int at=java.util.Arrays.asList(modes).indexOf(s.sortMode);s.sortMode=modes[(at+1)%modes.length];}}
+   AtlasSettings.save();return true;
+  }
   if(tab==Tab.SETTINGS&&my>=yy+20&&my<yy+20+10*21){int row=((int)my-yy-20)/21;switch(row){case 0->s.hud=!s.hud;case 1->s.esp=!s.esp;case 2->s.alerts=!s.alerts;case 3->s.alertSound=!s.alertSound;case 4->s.hideOwned=!s.hideOwned;case 5->s.shinyOnly=!s.shinyOnly;case 6->s.rareOnly=!s.rareOnly;case 7->s.pokemonRange=s.pokemonRange>=256?32:s.pokemonRange+32;case 8->s.blockRange=s.blockRange>=48?8:s.blockRange+8;case 9->s.partyHud=!s.partyHud;}AtlasSettings.save();return true;}
   return super.mouseClicked(mx,my,button);
  }

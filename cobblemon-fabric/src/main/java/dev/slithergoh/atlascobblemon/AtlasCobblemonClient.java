@@ -41,10 +41,21 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
   });
   HudRenderCallback.EVENT.register((draw,tick)->{
    MinecraftClient mc=MinecraftClient.getInstance();BlockRadar.draw(draw);PokemonEsp.draw(draw);if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
-   AtlasSettings settings=AtlasSettings.INSTANCE;int x=settings.hudX,y=settings.hudY;draw.fill(x,y,x+186,y+19+Math.min(visible.size(),9)*13,0xB6090A10);
-   draw.fill(x,y,x+3,y+19+Math.min(visible.size(),9)*13,0xFFD52C4D);
-   draw.drawTextWithShadow(mc.textRenderer,"ATLAS  •  COBBLEMON",x+9,y+5,0xFFF6D8DF);
-   int i=0;for(var p:visible){if(i++>=9)break;int col=p.shiny()?0xFF6CE8E8:p.rare()?0xFFF1B4B4:0xFFE2DCE1;draw.drawTextWithShadow(mc.textRenderer,p.name()+"  Lv."+p.level()+"  "+Math.round(p.distance())+"m",x+9,y+9+i*13,col);}
+   AtlasSettings settings=AtlasSettings.INSTANCE;int x=settings.hudX,y=settings.hudY;
+   int shown=Math.min(4,visible.size()),w=176,h=29+shown*22+(visible.size()>shown?10:0);
+   draw.fill(x,y,x+w,y+h,0xDF140F16);draw.fill(x,y,x+3,y+h,0xFFB84058);
+   draw.drawTextWithShadow(mc.textRenderer,"ATLAS",x+10,y+6,0xFFF4F8FA);
+   draw.drawTextWithShadow(mc.textRenderer,visible.size()+" nearby",x+w-65,y+6,0xFFB9A0A9);
+   for(int i=0;i<shown;i++){
+    var p=visible.get(i);int py=y+31+i*22;
+    if(p.id()==settings.trackedId)draw.fill(x+5,py-3,x+w-5,py+18,0xAA21483E);
+    int accent=p.shiny()?0xFF62FFFF:p.legendary()||p.mythical()?0xFFFFB64F:0xFFE8EEF1;
+    String name=p.name();if(mc.textRenderer.getWidth(name)>87)name=mc.textRenderer.trimToWidth(name,83)+"…";
+    draw.drawTextWithShadow(mc.textRenderer,name,x+29,py,accent);
+    draw.drawTextWithShadow(mc.textRenderer,p.owned()?"OWNED":"WILD",x+29,py+10,p.owned()?0xFF70C990:0xFF62D7FF);
+    draw.drawTextWithShadow(mc.textRenderer,Math.round(p.distance())+"m",x+w-34,py+4,0xFF9FB1B9);
+   }
+   if(visible.size()>shown)draw.drawTextWithShadow(mc.textRenderer,"+"+(visible.size()-shown)+" more  •  R opens Atlas",x+10,y+31+shown*22,0xFF718995);
    if(settings.partyHud){
     var party=CobblemonParty.slots();
     if(!party.isEmpty()){
@@ -61,9 +72,18 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
     }
    }
    for(var p:visible)if(p.id()==settings.trackedId){
-    int tx=settings.trackerX,ty=settings.trackerY;draw.fill(tx,ty,tx+190,ty+39,0xDC0E0B12);draw.fill(tx,ty,tx+3,ty+39,0xFFD52C4D);
-    draw.drawTextWithShadow(mc.textRenderer,"TRACKING  "+p.name(),tx+9,ty+7,0xFFFFB6C9);
-    draw.drawTextWithShadow(mc.textRenderer,Math.round(p.distance())+"m  X:"+p.pos().getX()+" Y:"+p.pos().getY()+" Z:"+p.pos().getZ(),tx+9,ty+22,0xFFE7DCE1);break;
+    int tx=settings.trackerX,ty=settings.trackerY;
+    int accent=p.shiny()?0xFF62FFFF:p.legendary()||p.mythical()?0xFFFFB64F:0xFF4EB7DD;
+    draw.fill(tx,ty,tx+208,ty+40,0xE00A1218);
+    draw.fill(tx,ty,tx+208,ty+3,accent);
+    draw.drawTextWithShadow(mc.textRenderer,p.name()+"  Lv."+p.level(),tx+41,ty+9,accent);
+    double dx=p.pos().getX()+.5-mc.player.getX(),dz=p.pos().getZ()+.5-mc.player.getZ();
+    double bearing=(Math.toDegrees(Math.atan2(-dx,dz))+360)%360;
+    String[] dirs={"N","NE","E","SE","S","SW","W","NW"};
+    String dir=dirs[(int)Math.round(bearing/45)%8];
+    draw.drawTextWithShadow(mc.textRenderer,Math.round(p.distance())+"m  •  "+dir+"  •  Y "+p.pos().getY(),tx+41,ty+23,0xFF9DB2BC);
+    draw.drawTextWithShadow(mc.textRenderer,"◆",tx+10,ty+15,accent);
+    break;
    }
   });
  }

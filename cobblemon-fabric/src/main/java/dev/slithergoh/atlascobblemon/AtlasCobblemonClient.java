@@ -41,10 +41,15 @@ public final class AtlasCobblemonClient implements ClientModInitializer {
   });
   HudRenderCallback.EVENT.register((draw,tick)->{
    MinecraftClient mc=MinecraftClient.getInstance();BlockRadar.draw(draw);if(!AtlasSettings.INSTANCE.hud||mc.player==null||mc.currentScreen!=null)return;
-   int x=7,y=7;draw.fill(x,y,x+186,y+19+Math.min(visible.size(),9)*13,0xB6090A10);
+   AtlasSettings settings=AtlasSettings.INSTANCE;int x=settings.hudX,y=settings.hudY;draw.fill(x,y,x+186,y+19+Math.min(visible.size(),9)*13,0xB6090A10);
    draw.fill(x,y,x+3,y+19+Math.min(visible.size(),9)*13,0xFFD52C4D);
    draw.drawTextWithShadow(mc.textRenderer,"ATLAS  •  COBBLEMON",x+9,y+5,0xFFF6D8DF);
    int i=0;for(var p:visible){if(i++>=9)break;int col=p.shiny()?0xFF6CE8E8:p.rare()?0xFFF1B4B4:0xFFE2DCE1;draw.drawTextWithShadow(mc.textRenderer,p.name()+"  Lv."+p.level()+"  "+Math.round(p.distance())+"m",x+9,y+9+i*13,col);}
+   for(var p:visible)if(p.id()==settings.trackedId){
+    int tx=settings.trackerX,ty=settings.trackerY;draw.fill(tx,ty,tx+190,ty+39,0xDC0E0B12);draw.fill(tx,ty,tx+3,ty+39,0xFFD52C4D);
+    draw.drawTextWithShadow(mc.textRenderer,"TRACKING  "+p.name(),tx+9,ty+7,0xFFFFB6C9);
+    draw.drawTextWithShadow(mc.textRenderer,Math.round(p.distance())+"m  X:"+p.pos().getX()+" Y:"+p.pos().getY()+" Z:"+p.pos().getZ(),tx+9,ty+22,0xFFE7DCE1);break;
+   }
   });
  }
 }

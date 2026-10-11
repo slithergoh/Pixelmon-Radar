@@ -31,6 +31,7 @@ public final class AtlasScreen extends Screen {
   }else if(tab==Tab.TARGETS){
    line(g,"POKEMON TARGETS   /   "+s.targets.size()+" WATCHED",x+14,yy,RED);
    List<String> matches=SpeciesIndex.search(search.getText());
+   if(matches.isEmpty())line(g,"No species loaded. Join a Cobblemon world first.",x+16,yy+58,0xFFE3A5B7);
    int cols=5,shown=0;for(int i=scroll;i<matches.size()&&shown<15;i++,shown++){
     String name=matches.get(i);int cx=x+12+(shown%cols)*79,cy=yy+49+(shown/cols)*65;
     boolean selected=s.targets.contains(name.toLowerCase(Locale.ROOT));
